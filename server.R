@@ -6,6 +6,7 @@ library(dplyr)
 library(xml2)
 library(jsonlite)
 library(RCitioPackage)
+library(data.table)
 
 function(input, output, session) {
   
@@ -32,11 +33,13 @@ function(input, output, session) {
       
       agency_id = getAgencyId(api_base_url, session_id())
       
-      print ("Loading data")
+      print ("Querying API")
       
       predicted_occupancy_data = getPredictedOccupancyData(api_base_url,
                                                            session_id=session_id(),
                                                            input$service_date)
+      
+      print ("Data retrieved")
       
       stops = getReferentialSection(api_base_url,session_id(),"stops")
       stops = data.frame(stops$id, stops$station_id)
@@ -47,35 +50,34 @@ function(input, output, session) {
       gtfs_stops = read.csv("ctfs/python_agencies_staging_orleansmetropole_referential_gtfs_stops.csv")
       gtfs_stops = data.frame(gtfs_stops$gtfs_id, gtfs_stops$stop_id)
       
+      referential = merge(stops,
+                          gtfs_stops,
+                          by.x = "stops.id",
+                          by.y = "gtfs_stops.stop_id")
+      
+      referential = merge(referential,
+                          stations,
+                          by.x = "stops.id",
+                          by.y = "stations.id")
+      
+      names(referential) = c("stop_id", "station_id", "gtfs_stop_id", "station_name")
+      
       clean_predicted_occupancy = merge(predicted_occupancy_data,
-                                        gtfs_stops,
+                                        referential,
                                         by.x = "terminus_gtfs_stop_id",
-                                        by.y = "gtfs_stops.gtfs_id")
-            
-      clean_predicted_occupancy = merge(predicted_occupancy_data,
-                                        gtfs_stops,
-                                        by.x = "gtfs_stop_id",
-                                        by.y = "gtfs_stops.gtfs_id")
+                                        by.y = "gtfs_stop_id")
       
-      clean_predicted_occupancy = merge(clean_predicted_occupancy,
-                                        stops,
-                                        by.x = "gtfs_stops.stop_id",
-                                        by.y = "stops.id")
-      
-      clean_predicted_occupancy = merge(clean_predicted_occupancy,
-                                        stations,
-                                        by.x = "stops.station_id",
-                                        by.y = "stations.id")
       
       hours = gsub("(15|30|45):00","00:00",clean_predicted_occupancy$time)
-      line_and_direction = paste(clean_predicted_occupancy$line_short_name,clean_predicted_occupancy$stations.name,sep = "_")
+      line_and_direction = paste(clean_predicted_occupancy$line_short_name,clean_predicted_occupancy$station_name,sep = "_")
       clean_predicted_occupancy = data.frame(clean_predicted_occupancy,hours, line_and_direction)
+      
       
       
       }
   })
   
-  output$clean_predicted_occupancy = renderTable({
+  output$clean_predicted_occupancy = renderDataTable({
     clean_predicted_occupancy()
   })
   

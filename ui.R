@@ -31,10 +31,12 @@ shinyUI(fluidPage(theme = "bootstrap.css",
                     selectInput("aggregation_y", "Axe vertical", 
                                 choices=c("line_short_name", 
                                           "time",
+                                          "line_and_direction",
                                           "hours"),
                                 selected = "line_short_name"),
                     selectInput("aggregation_x", "Axe horizontal", 
                                 choices=c("line_short_name", 
+                                          "line_and_direction",
                                           "time",
                                           "hours"),
                                 selected = "time")
@@ -44,9 +46,9 @@ shinyUI(fluidPage(theme = "bootstrap.css",
                   
                   mainPanel(
                     tabsetPanel(type = "tabs", 
-                                tabPanel("Données brutes", tableOutput("clean_predicted_occupancy")),
-                                tabPanel("Visualisation", plotOutput("heatmap"))
+                                tabPanel("Visualisation", plotOutput("heatmap")),
+                                tabPanel("Données brutes", dataTableOutput("clean_predicted_occupancy"))
                     )
                   )
-)
-)
+                  )
+        )
