@@ -1,0 +1,65 @@
+@import url("https://fonts.googleapis.com/css?family=Rubik:400,700");
+@import url("https://fonts.googleapis.com/css?family=Josefin+Sans:400,700");
+
+html {
+  --blue-brand-color:#4D5978;
+  --grey-brand-color:#838BA1;
+  --light-brand-color:#EFEFF7;
+  --darker-blue-brand-color:#46516d;
+  --red:#C48080;
+  box-shadow:none;
+}
+
+body {
+  font-family: "Rubik", sans-serif;
+  color:var(--blue-brand-color);
+}
+
+a {
+	color:var(--grey-brand-color);
+}
+
+a:hover,
+a:focus {
+  color: var(--blue-brand-color);
+  background-color: var(--light-brand-color);
+}
+
+.btn {
+	color: #fff;
+    background-color: var(--blue-brand-color);
+    margin-bottom: 15px
+}
+
+.btn:hover,.btn:focus,.btn:active {
+	color: #fff;
+  background-color: var(--darker-blue-brand-color);
+}
+
+.btn:visited {
+	color: #fff;
+  background-color: var(--grey-brand-color);
+}
+
+.datepicker table tr td.active.active {
+	background-color: var(--blue-brand-color)
+}
+
+.datepicker-days {
+	padding:12px;
+}
+
+.form-control, .well,.selectize-input,.btn,.btn-default {
+    border:none;
+    box-shadow: none;
+}
+
+.well {
+    background-color: var(--light-brand-color);
+}
+
+.shiny-output-error {
+    color: var(--red);
+    text-align: center;
+    padding: 33vh;
+}
