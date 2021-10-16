@@ -47,7 +47,7 @@ shinyUI(fluidPage(theme = "bootstrap.css",
                   mainPanel(
                     tabsetPanel(type = "tabs", 
                                 tabPanel("Visualisation", plotOutput("heatmap")),
-                                tabPanel("Données brutes", dataTableOutput("clean_predicted_occupancy"))
+                                tabPanel("Données brutes", dataTableOutput("raw_occupancy_data"))
                     )
                   )
                   )

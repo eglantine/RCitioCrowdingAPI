@@ -20,26 +20,33 @@ function(input, output, session) {
     }
     
   })
-  observe({
-    
-    if(!is.null(session_id())){
-      api_base_url = buildBaseUrl(input$group, input$env)
-    }
-  })
+  # observe({
+  #   
+  #   if(!is.null(session_id())){
+  #     api_base_url = buildBaseUrl(input$group, input$env)
+  #   }
+  # })
   
-  clean_predicted_occupancy = reactive({
+  raw_occupancy_data = reactive({
     if(!is.null(session_id())){
       api_base_url = buildBaseUrl(input$group, input$env)
-      
-      agency_id = getAgencyId(api_base_url, session_id())
       
       print ("Querying API")
       
-      predicted_occupancy_data = getPredictedOccupancyData(api_base_url,
-                                                           session_id=session_id(),
-                                                           input$service_date)
+      raw_occupancy_data = getPredictedOccupancyData(api_base_url,
+                                                     session_id=session_id(),
+                                                     input$service_date)
       
       print ("Data retrieved")
+      
+      return(raw_occupancy_data)
+    }
+  })
+  
+  referential = reactive({
+    
+    if(!is.null(session_id())){
+      api_base_url = buildBaseUrl(input$group, input$env)
       
       stops = getReferentialSection(api_base_url,session_id(),"stops")
       stops = data.frame(stops$id, stops$station_id)
@@ -62,23 +69,28 @@ function(input, output, session) {
       
       names(referential) = c("stop_id", "station_id", "gtfs_stop_id", "station_name")
       
-      clean_predicted_occupancy = merge(predicted_occupancy_data,
-                                        referential,
-                                        by.x = "terminus_gtfs_stop_id",
-                                        by.y = "gtfs_stop_id")
-      
-      
-      hours = gsub("(15|30|45):00","00:00",clean_predicted_occupancy$time)
-      line_and_direction = paste(clean_predicted_occupancy$line_short_name,clean_predicted_occupancy$station_name,sep = "_")
-      clean_predicted_occupancy = data.frame(clean_predicted_occupancy,hours, line_and_direction)
-      
-      
-      
-      }
+      return(referential)
+    }
+    
   })
   
-  output$clean_predicted_occupancy = renderDataTable({
-    clean_predicted_occupancy()
+  clean_predicted_occupancy = reactive({
+    
+    if(!is.null(session_id())){
+    
+    clean_predicted_occupancy = merge(raw_occupancy_data(),
+                                      referential(),
+                                      by.x = "terminus_gtfs_stop_id",
+                                      by.y = "gtfs_stop_id")
+    
+    hours = gsub("(15|30|45):00","00:00",clean_predicted_occupancy$time)
+    line_and_direction = paste(clean_predicted_occupancy$line_short_name,clean_predicted_occupancy$station_name,sep = "_")
+    clean_predicted_occupancy = data.frame(clean_predicted_occupancy,hours, line_and_direction)
+    }
+  })
+  
+  output$raw_occupancy_data = renderDataTable({
+    raw_occupancy_data()
   })
   
   output$downloadRawData <- downloadHandler(
@@ -94,7 +106,7 @@ function(input, output, session) {
     graph_data = clean_predicted_occupancy() %>%
       group_by(.data[[input$aggregation_x]], .data[[input$aggregation_y]]) %>%
       summarise(occupancy = sum(occupancy),
-      occupancy_rate = sum(occupancy)/sum(capacity))
+                occupancy_rate = sum(occupancy)/sum(capacity))
     
     ggplot(graph_data, aes(.data[[input$aggregation_x]], .data[[input$aggregation_y]])) +
       geom_point(aes(size = occupancy, colour = occupancy_rate)) +
@@ -102,6 +114,5 @@ function(input, output, session) {
       theme(axis.text.x=element_text(angle=45, hjust=1),
             panel.background = element_rect(fill = "#EFEFF7", colour = "white"))
   })
-    
   
 }
