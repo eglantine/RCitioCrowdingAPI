@@ -15,60 +15,62 @@ function(input, output, session) {
     session_id = getSessionId(input$login, input$password, input$group, input$env)
     
     if(!is.null(session_id)){
-      print(paste0("Login successful with session_id ",session_id))
+      print(paste(Sys.time(), "Login successful with session_id",session_id))
       
       return(session_id)
     }
     
   })
   
+  api_base_url = reactive({
+    buildBaseUrl(input$group, input$env)
+  })
+  
+  
   raw_occupancy_data = reactive({
     
     shiny::validate(
-      need(input$doLogin, "Veuillez vous connecter pour accéder aux données."),
-      need(session_id()!= "", "Connexion impossible., Veuillez vérifier votre identifiant et votre mot de passe.")
+      shiny::need(input$doLogin, "Veuillez vous connecter pour accéder aux données."),
+      shiny::need(session_id()!= "", "Connexion impossible. Veuillez vérifier votre identifiant et votre mot de passe.")
     )
-
-    api_base_url = buildBaseUrl(input$group, input$env)
-      
-      print ("Querying API")
-      
-      raw_occupancy_data = getPredictedOccupancyData(api_base_url,
-                                                     session_id=session_id(),
-                                                     input$service_date)
-      
-      print ("Data retrieved")
-      
-      return(raw_occupancy_data)
+    
+    print (paste(Sys.time(),"Querying API"))
+    
+    
+    raw_occupancy_data = getPredictedOccupancyData(api_base_url(),
+                                                   session_id=session_id(),
+                                                   input$service_date)
+    
+    print (paste(Sys.time(),"Data retrieved"))
+    
+    return(raw_occupancy_data)
   })
   
   referential = reactive({
     
-      api_base_url = buildBaseUrl(input$group, input$env)
-      
-      stops = getReferentialSection(api_base_url,session_id(),"stops")
-      stops = data.frame(stops$id, stops$station_id)
-      
-      stations = getReferentialSection(api_base_url,session_id(),"stations")
-      stations = data.frame(stations$id, stations$name)
-      
-      gtfs_stops = read.csv("ctfs/python_agencies_staging_orleansmetropole_referential_gtfs_stops.csv")
-      gtfs_stops = data.frame(gtfs_stops$gtfs_id, gtfs_stops$stop_id)
-      
-      referential = merge(stops,
-                          gtfs_stops,
-                          by.x = "stops.id",
-                          by.y = "gtfs_stops.stop_id")
-      
-      referential = merge(referential,
-                          stations,
-                          by.x = "stops.id",
-                          by.y = "stations.id")
-      
-      names(referential) = c("stop_id", "station_id", "gtfs_stop_id", "station_name")
-      
-      return(referential)
-
+    stops = getReferentialSection(api_base_url(),session_id(),"stops")
+    stops = data.frame(stops$id, stops$station_id)
+    
+    stations = getReferentialSection(api_base_url(),session_id(),"stations")
+    stations = data.frame(stations$id, stations$name)
+    
+    gtfs_stops = read.csv("ctfs/python_agencies_staging_orleansmetropole_referential_gtfs_stops.csv")
+    gtfs_stops = data.frame(gtfs_stops$gtfs_id, gtfs_stops$stop_id)
+    
+    referential = merge(stops,
+                        gtfs_stops,
+                        by.x = "stops.id",
+                        by.y = "gtfs_stops.stop_id")
+    
+    referential = merge(referential,
+                        stations,
+                        by.x = "stops.id",
+                        by.y = "stations.id")
+    
+    names(referential) = c("stop_id", "station_id", "gtfs_stop_id", "station_name")
+    
+    return(referential)
+    
   })
   
   clean_predicted_occupancy = reactive({
@@ -105,7 +107,7 @@ function(input, output, session) {
   )
   
   heatmap = reactive({
-
+    
     graph_data = clean_predicted_occupancy() %>%
       group_by(.data[[input$aggregation_x]], .data[[input$aggregation_y]]) %>%
       summarise(occupancy = sum(occupancy),
@@ -125,7 +127,7 @@ function(input, output, session) {
   output$downloadHeatmap <- downloadHandler(
     filename = function() {
       paste0(input$group," - ",input$env," - ", input$date, ".png")
-      },
+    },
     content = function(file) {
       ggsave(file,heatmap())
     }
