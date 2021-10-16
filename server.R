@@ -82,15 +82,23 @@ function(input, output, session) {
                                       referential(),
                                       by.x = "terminus_gtfs_stop_id",
                                       by.y = "gtfs_stop_id")
+    names(clean_predicted_occupancy)[names(clean_predicted_occupancy) == "station_name"] <- "terminus_station_name"
+    names(clean_predicted_occupancy)[names(clean_predicted_occupancy) == "stop_id"] <- "terminus_stop_id"
+    names(clean_predicted_occupancy)[names(clean_predicted_occupancy) == "station_id"] <- "terminus_station_id"
+    
+    clean_predicted_occupancy = merge(clean_predicted_occupancy,
+                                      referential(),
+                                      by.x = "gtfs_stop_id",
+                                      by.y = "gtfs_stop_id")
     
     hours = gsub("(15|30|45):00","00:00",clean_predicted_occupancy$time)
-    line_and_direction = paste(clean_predicted_occupancy$line_short_name,clean_predicted_occupancy$station_name,sep = "_")
+    line_and_direction = paste(clean_predicted_occupancy$line_short_name,clean_predicted_occupancy$terminus_station_name,sep = "_")
     clean_predicted_occupancy = data.frame(clean_predicted_occupancy,hours, line_and_direction)
     }
   })
   
-  output$raw_occupancy_data = renderDataTable({
-    raw_occupancy_data()
+  output$clean_predicted_occupancy = renderDataTable({
+    clean_predicted_occupancy()
   })
   
   output$downloadRawData <- downloadHandler(

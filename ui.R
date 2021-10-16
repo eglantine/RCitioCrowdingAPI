@@ -1,7 +1,7 @@
 library(httr)
 library(purrr)
 library(shiny)
- 
+
 agency_list = map(content(GET("http://django.gateway.cit.io/agencies/")), 1)
 agency_list = sort(unlist(agency_list))
 
@@ -21,7 +21,7 @@ shinyUI(fluidPage(theme = "bootstrap.css",
                                 choices=c("staging", "production")),
                     
                     actionButton("doLogin", "Se connecter"),
-
+                    
                     
                     tags$h3("Données"),
                     dateInput("service_date", "Date ", value = Sys.Date(),),
@@ -47,8 +47,8 @@ shinyUI(fluidPage(theme = "bootstrap.css",
                   mainPanel(
                     tabsetPanel(type = "tabs", 
                                 tabPanel("Visualisation", plotOutput("heatmap")),
-                                tabPanel("Données brutes", dataTableOutput("raw_occupancy_data"))
+                                tabPanel("Données brutes", dataTableOutput("clean_predicted_occupancy"))
                     )
                   )
-                  )
-        )
+)
+)
