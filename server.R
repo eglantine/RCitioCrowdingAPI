@@ -11,6 +11,7 @@ library(data.table)
 function(input, output, session) {
   
   session_id = eventReactive(input$doLogin,{
+    
     session_id = getSessionId(input$login, input$password, input$group, input$env)
     
     if(!is.null(session_id)){
@@ -20,16 +21,15 @@ function(input, output, session) {
     }
     
   })
-  # observe({
-  #   
-  #   if(!is.null(session_id())){
-  #     api_base_url = buildBaseUrl(input$group, input$env)
-  #   }
-  # })
   
   raw_occupancy_data = reactive({
-    if(!is.null(session_id())){
-      api_base_url = buildBaseUrl(input$group, input$env)
+    
+    shiny::validate(
+      need(input$doLogin, "Veuillez vous connecter pour accéder aux données."),
+      need(session_id()!= "", "Connexion impossible., Veuillez vérifier votre identifiant et votre mot de passe.")
+    )
+
+    api_base_url = buildBaseUrl(input$group, input$env)
       
       print ("Querying API")
       
@@ -40,12 +40,10 @@ function(input, output, session) {
       print ("Data retrieved")
       
       return(raw_occupancy_data)
-    }
   })
   
   referential = reactive({
     
-    if(!is.null(session_id())){
       api_base_url = buildBaseUrl(input$group, input$env)
       
       stops = getReferentialSection(api_base_url,session_id(),"stops")
@@ -70,13 +68,10 @@ function(input, output, session) {
       names(referential) = c("stop_id", "station_id", "gtfs_stop_id", "station_name")
       
       return(referential)
-    }
-    
+
   })
   
   clean_predicted_occupancy = reactive({
-    
-    if(!is.null(session_id())){
     
     clean_predicted_occupancy = merge(raw_occupancy_data(),
                                       referential(),
@@ -94,7 +89,6 @@ function(input, output, session) {
     hours = gsub("(15|30|45):00","00:00",clean_predicted_occupancy$time)
     line_and_direction = paste(clean_predicted_occupancy$line_short_name,clean_predicted_occupancy$terminus_station_name,sep = "_")
     clean_predicted_occupancy = data.frame(clean_predicted_occupancy,hours, line_and_direction)
-    }
   })
   
   output$clean_predicted_occupancy = renderDataTable({
@@ -103,14 +97,15 @@ function(input, output, session) {
   
   output$downloadRawData <- downloadHandler(
     filename = function() {
-      paste0(input$group," - ",input$kpi," - ", input$service_date, ".csv")
+      paste0(input$group," - ",input$env," - ", input$date, ".csv")
     },
     content = function(file) {
       write.csv2(clean_predicted_occupancy(), file, row.names = FALSE)
     }
   )
   
-  output$heatmap<-renderPlot({
+  heatmap = reactive({
+
     graph_data = clean_predicted_occupancy() %>%
       group_by(.data[[input$aggregation_x]], .data[[input$aggregation_y]]) %>%
       summarise(occupancy = sum(occupancy),
@@ -122,5 +117,18 @@ function(input, output, session) {
       theme(axis.text.x=element_text(angle=45, hjust=1),
             panel.background = element_rect(fill = "#EFEFF7", colour = "white"))
   })
+  
+  output$heatmap <- renderPlot({
+    print(heatmap())
+  })
+  
+  output$downloadHeatmap <- downloadHandler(
+    filename = function() {
+      paste0(input$group," - ",input$env," - ", input$date, ".png")
+      },
+    content = function(file) {
+      ggsave(file,heatmap())
+    }
+  )
   
 }
