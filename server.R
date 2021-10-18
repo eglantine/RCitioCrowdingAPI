@@ -15,7 +15,7 @@ function(input, output, session) {
     session_id = getSessionId(input$login, input$password, input$group, input$env)
     
     if(!is.null(session_id)){
-      print(paste(Sys.time(), "Login successful with session_id",session_id))
+      print(paste(Sys.time(), "Login successful with session_id",session_id, "for user", input$login))
       
       return(session_id)
     }
