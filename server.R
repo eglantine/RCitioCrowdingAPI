@@ -23,9 +23,12 @@ function(input, output, session) {
   })
   
   api_base_url = reactive({
-    buildBaseUrl(input$group, input$env)
+    buildBaseUrl(input$group, api, input$env)
   })
   
+    prediction_base_url = reactive({
+    buildBaseUrl(input$group, prediction, input$env)
+  })
   
   raw_occupancy_data = reactive({
     
@@ -37,7 +40,7 @@ function(input, output, session) {
     print (paste(Sys.time(),"Querying API"))
     
     
-    raw_occupancy_data = getPredictedOccupancyData(api_base_url(),
+    raw_occupancy_data = getPredictedOccupancyData(prediction_base_url(),
                                                    session_id=session_id(),
                                                    input$service_date)
     
