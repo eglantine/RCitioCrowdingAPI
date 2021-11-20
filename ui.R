@@ -18,7 +18,7 @@ shinyUI(fluidPage(
     tags$h3("Connexion"),
     textInput("login", "Identifiant", "eglantine@cit.io"),
     passwordInput("password", "Mot de passe",""),
-    selectInput("group", "Réseau",
+    selectInput("agency", "Réseau",
                 choices=agency_list,selected = "orleansmetropole"),
     selectInput("env", "Environnement", 
                 choices=c("staging", "production")),
@@ -36,21 +36,23 @@ shinyUI(fluidPage(
     ),
     downloadButton("downloadRawData", "Télécharger les données brutes"),
     
-    tags$h3("Visualisation"),
-    selectInput("aggregation_y", "Axe vertical", 
-                choices=c("Ligne" = "line_short_name", 
-                          "Ligne et direction" = "line_and_direction", 
-                          "Heure (quart d'heure)" =  "time",
-                          "Heure" = "hours"),
-                selected = "line_short_name"),
-    
-    selectInput("aggregation_x", "Axe horizontal", 
-                choices=c("Ligne" = "line_short_name", 
-                          "Ligne et direction" = "line_and_direction", 
-                          "Heure (quart d'heure)" =  "time",
-                          "Heure" = "hours"),
-                selected = "time"),
-    downloadButton('downloadHeatmap', "Export image")
+    # tags$h3("Visualisation"),
+    # selectInput("aggregation_y", "Axe vertical", 
+    #             choices=c("Ligne" = "line_short_name", 
+    #                       "Ligne et direction" = "line_and_direction", 
+    #                       "Heure (quart d'heure)" =  "time",
+    #                       "Heure" = "hours"),
+    #             selected = "line_short_name"),
+    # 
+    # selectInput("aggregation_x", "Axe horizontal", 
+    #             choices=c("Ligne" = "line_short_name", 
+    #                       "Ligne et direction" = "line_and_direction", 
+    #                       "Heure (quart d'heure)" =  "time",
+    #                       "Heure" = "hours"),
+    #             selected = "time"),
+#    numericInput("plot_heigth", "Taille du graphique (px)", value = 400),
+      
+#    downloadButton('downloadHeatmap', "Export image")
     
     
     
@@ -59,8 +61,8 @@ shinyUI(fluidPage(
   mainPanel(
     tabsetPanel(
       type = "tabs", 
-      tabPanel("Visualisation", plotOutput("heatmap")),
-      tabPanel("Données brutes", dataTableOutput("clean_predicted_occupancy"))
+#                tabPanel("Visualisation", plotOutput("heatmap")),
+                tabPanel("Données brutes", dataTableOutput("clean_predicted_occupancy"))
     )
   )
   

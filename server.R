@@ -12,7 +12,7 @@ function(input, output, session) {
   
   session_id = eventReactive(input$doLogin,{
     
-    session_id = getSessionId(input$login, input$password, input$group, input$env)
+    session_id = getSessionId(input$login, input$password, input$agency, input$env)
     
     if(!is.null(session_id)){
       print(paste(Sys.time(), "Login successful with session_id",session_id, "for user", input$login))
@@ -23,7 +23,7 @@ function(input, output, session) {
   })
   
   api_base_url = reactive({
-    buildBaseUrl(input$group, input$env)
+    buildBaseUrl(input$agency, input$env)
   })
   
   
@@ -99,7 +99,7 @@ function(input, output, session) {
   
   output$downloadRawData <- downloadHandler(
     filename = function() {
-      paste0(input$group," - ",input$env," - ", input$date, ".csv")
+      paste0(input$agency," - ",input$env," - ", input$date, ".csv")
     },
     content = function(file) {
       write.csv2(clean_predicted_occupancy(), file, row.names = FALSE)
@@ -126,7 +126,7 @@ function(input, output, session) {
   
   output$downloadHeatmap <- downloadHandler(
     filename = function() {
-      paste0(input$group," - ",input$env," - ", input$date, ".png")
+      paste0(input$agency," - ",input$env," - ", input$date, ".png")
     },
     content = function(file) {
       ggsave(file,heatmap())
