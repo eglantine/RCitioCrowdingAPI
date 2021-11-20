@@ -36,23 +36,23 @@ shinyUI(fluidPage(
     ),
     downloadButton("downloadRawData", "Télécharger les données brutes"),
     
-    # tags$h3("Visualisation"),
-    # selectInput("aggregation_y", "Axe vertical", 
-    #             choices=c("Ligne" = "line_short_name", 
-    #                       "Ligne et direction" = "line_and_direction", 
-    #                       "Heure (quart d'heure)" =  "time",
-    #                       "Heure" = "hours"),
-    #             selected = "line_short_name"),
-    # 
-    # selectInput("aggregation_x", "Axe horizontal", 
-    #             choices=c("Ligne" = "line_short_name", 
-    #                       "Ligne et direction" = "line_and_direction", 
-    #                       "Heure (quart d'heure)" =  "time",
-    #                       "Heure" = "hours"),
-    #             selected = "time"),
-#    numericInput("plot_heigth", "Taille du graphique (px)", value = 400),
-      
-#    downloadButton('downloadHeatmap', "Export image")
+    tags$h3("Visualisation"),
+    selectInput("aggregation_y", "Axe vertical",
+                choices=c("Ligne" = "line_short_name",
+                          "Ligne et direction" = "line_and_direction",
+                          "Heure (quart d'heure)" =  "time",
+                          "Heure" = "hours"),
+                selected = "line_short_name"),
+    
+     selectInput("aggregation_x", "Axe horizontal",
+                choices=c("Ligne" = "line_short_name",
+                          "Ligne et direction" = "line_and_direction",
+                          "Heure (quart d'heure)" =  "time",
+                          "Heure" = "hours"),
+                selected = "time"),
+       numericInput("plot_heigth", "Taille du graphique (px)", value = 400),
+
+       downloadButton('downloadHeatmap', "Export image")
     
     
     
@@ -61,7 +61,7 @@ shinyUI(fluidPage(
   mainPanel(
     tabsetPanel(
       type = "tabs", 
-#                tabPanel("Visualisation", plotOutput("heatmap")),
+                tabPanel("Visualisation", plotOutput("heatmap")),
                 tabPanel("Données brutes", dataTableOutput("clean_predicted_occupancy"))
     )
   )
