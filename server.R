@@ -58,7 +58,7 @@ function(input, output, session) {
     stations = getReferentialSection(api_base_url(),session_id(),"stations")
     stations = data.frame(stations$id, stations$name)
     
-    gtfs_stops = read.csv("ctfs/python_agencies_staging_orleansmetropole_referential_gtfs_stops.csv")
+    gtfs_stops = getReferentialSection(api_base_url(),session_id(),"gtfs_stops")
     gtfs_stops = data.frame(gtfs_stops$gtfs_id, gtfs_stops$stop_id)
     
     referential = merge(stops,
@@ -68,7 +68,7 @@ function(input, output, session) {
     
     referential = merge(referential,
                         stations,
-                        by.x = "stops.id",
+                        by.x = "stops.station_id",
                         by.y = "stations.id")
     
     names(referential) = c("stop_id", "station_id", "gtfs_stop_id", "station_name")
@@ -82,7 +82,8 @@ function(input, output, session) {
     clean_predicted_occupancy = merge(raw_occupancy_data(),
                                       referential(),
                                       by.x = "terminus_gtfs_stop_id",
-                                      by.y = "gtfs_stop_id")
+                                      by.y = "gtfs_stop_id",
+                                      all.x = T)
     names(clean_predicted_occupancy)[names(clean_predicted_occupancy) == "station_name"] <- "terminus_station_name"
     names(clean_predicted_occupancy)[names(clean_predicted_occupancy) == "stop_id"] <- "terminus_stop_id"
     names(clean_predicted_occupancy)[names(clean_predicted_occupancy) == "station_id"] <- "terminus_station_id"
@@ -90,7 +91,8 @@ function(input, output, session) {
     clean_predicted_occupancy = merge(clean_predicted_occupancy,
                                       referential(),
                                       by.x = "gtfs_stop_id",
-                                      by.y = "gtfs_stop_id")
+                                      by.y = "gtfs_stop_id",
+                                      all.x = T)
     
     hours = gsub("(15|30|45):00","00:00",clean_predicted_occupancy$time)
     line_and_direction = paste(clean_predicted_occupancy$line_short_name,clean_predicted_occupancy$terminus_station_name,sep = "_")

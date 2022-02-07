@@ -2,7 +2,7 @@ library(httr)
 library(purrr)
 library(shiny)
 
-agency_list = map(content(GET("http://django.gateway.cit.io/agencies/")), 1)
+agency_list = map(content(GET("http://django.gateway.staging.cit.io/agencies/")), 1)
 agency_list = sort(unlist(agency_list))
 
 shinyUI(fluidPage(
