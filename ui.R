@@ -3,7 +3,9 @@ library(purrr)
 library(shiny)
 
 agency_list = map(content(GET("http://django.gateway.staging.cit.io/agencies/")), 1)
-agency_list = sort(unlist(agency_list))
+prediction_api = sapply(content(GET("http://django.gateway.staging.cit.io/agencies/")), function(x) x$prediction_apis)
+active_agency_list = agency_list[prediction_api == TRUE]
+active_agency_list = sort(unlist(active_agency_list))
 
 shinyUI(fluidPage(
   theme = "bootstrap.css",
@@ -19,7 +21,7 @@ shinyUI(fluidPage(
     textInput("login", "Identifiant", "eglantine@cit.io"),
     passwordInput("password", "Mot de passe",""),
     selectInput("agency", "Réseau",
-                choices=agency_list,selected = "orleansmetropole"),
+                choices=active_agency_list,selected = "orleansmetropole"),
     selectInput("env", "Environnement", 
                 choices=c("staging", "production")),
     
@@ -37,6 +39,13 @@ shinyUI(fluidPage(
     downloadButton("downloadRawData", "Télécharger les données brutes"),
     
     tags$h3("Visualisation"),
+    selectInput("occupancy_type", "Type de charge",
+                choices=c("Mixte" = "occupancy",
+                          "Comptage" = "occupancy_counting_cells",
+                          "Billettique réhaussée" = "occupancy_adjusted_ticketing",
+                          "Unifiée" =  "occupancy_unified"),
+                selected = "occupancy"),
+    
     selectInput("aggregation_y", "Axe vertical",
                 choices=c("Ligne" = "line_short_name",
                           "Ligne et direction" = "line_and_direction",
