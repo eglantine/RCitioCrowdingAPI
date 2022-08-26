@@ -4,8 +4,9 @@ library(shiny)
 
 agency_list = map(content(GET("http://django.gateway.staging.cit.io/agencies/")), 1)
 prediction_api = sapply(content(GET("http://django.gateway.staging.cit.io/agencies/")), function(x) x$prediction_apis)
-active_agency_list = agency_list[prediction_api == TRUE]
-active_agency_list = sort(unlist(active_agency_list))
+# active_agency_list = agency_list[prediction_api == TRUE]
+#active_agency_list = sort(unlist(active_agency_list))
+active_agency_list = sort(unlist(agency_list))
 
 shinyUI(fluidPage(
   theme = "bootstrap.css",
@@ -34,8 +35,10 @@ shinyUI(fluidPage(
               value = Sys.Date(),
               weekstart = 1,
               language = "fr",
-              format = "dd/mm/yyyy"
-    ),
+              format = "dd/mm/yyyy"),
+    radioButtons("api_version", "Sélectionner la version de la prédiction", 
+                 c("version 1" = "v1",
+                   "version 2" = "v2")),
     downloadButton("downloadRawData", "Télécharger les données brutes"),
     
     tags$h3("Visualisation"),
