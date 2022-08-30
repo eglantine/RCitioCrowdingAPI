@@ -1,12 +1,16 @@
-# devtools::install_github("eglantine/RCitioPackage",ref ="main")
+#devtools::install_github("eglantine/RCitioPackage",ref ="main")
+#devtools::install_git("https://gitlab.dev.cit.io/citio/dev/personal_tools/r_citio_package", credentials=git2r::cred_token("GITLAB_PAT"))
 library(shiny)
 library(httr)
 library(ggplot2)
 library(dplyr)
 library(xml2)
 library(jsonlite)
-library(RCitioPackage)
 library(data.table)
+library(devtools)
+library(remotes)
+library(RCitioPackage)
+library(readr)
 
 function(input, output, session) {
   
@@ -38,7 +42,11 @@ function(input, output, session) {
       shiny::need(session_id()!= "", "Connexion impossible. Veuillez vérifier votre identifiant et votre mot de passe.")
     )
     
-    print (paste(Sys.time(),"Querying API"))
+    print(paste(Sys.time(),"Querying API"))
+    showNotification(paste("Récupération des données de",
+                           input$agency, 
+                           "(",input$env, ")"))
+    
     
     
     raw_occupancy_data = getPredictedOccupancyData2(prediction_base_url(),
@@ -47,8 +55,12 @@ function(input, output, session) {
                                                     show_all_occupancy = TRUE,
                                                     version = input$api_version)
     
-    print (paste(Sys.time(),"Data retrieved"))
-
+    shiny::validate(
+      shiny::need(nrow(raw_occupancy_data)>0, "Pas de prédiction disponible pour ces paramètres.")
+    )
+    
+    print(paste(Sys.time(),"Data retrieved"))
+    
     return(raw_occupancy_data)
   })
   
@@ -62,6 +74,7 @@ function(input, output, session) {
       left_join(y = getCloudReferentialSection(api_base_url(),session_id(),"stations"),
                 by = c("station_id" = "id")) %>%
       rename(station_name =  name) %>%
+      mutate(gtfs_id = as.character(gtfs_id)) %>%
       select(gtfs_id, stop_id, station_id, station_name)
     
     # stops = getCloudReferentialSection(api_base_url(),session_id(),"stops")
