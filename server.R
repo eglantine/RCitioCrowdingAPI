@@ -105,6 +105,8 @@ function(input, output, session) {
   clean_predicted_occupancy = reactive({
     
     clean_predicted_occupancy = raw_occupancy_data() %>%
+      mutate(terminus_gtfs_stop_id = gsub("^0+","",terminus_gtfs_stop_id),
+             gtfs_stop_id = gsub("^0+","",gtfs_stop_id)) %>%
       left_join(y = referential(), 
                 by = c("terminus_gtfs_stop_id" = "gtfs_id")) %>%
       rename(terminus_station_name = station_name,
